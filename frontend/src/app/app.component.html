@@ -1,1 +1,12 @@
-<app-image-viewer></app-image-viewer>
+<app-nav-bar [title]="title"></app-nav-bar>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 py-3">
+            <app-annotations-list></app-annotations-list>
+        </div>
+        <div class="col-md-10" style="background-color: gray;">
+            <app-image-viewer></app-image-viewer>
+        </div>
+    </div>
+</div>
+<app-footer></app-footer>
