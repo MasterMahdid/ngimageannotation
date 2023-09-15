@@ -10,8 +10,8 @@ export class ImageViewerComponent {
 	private data: Array<any> = [];
 	private svg: any;
 	private margin = 0;
-	private width = 750 - (this.margin * 2);
-	private height = 400 - (this.margin * 2);
+	private width = 1550 - (this.margin * 2);
+	private height = 800 - (this.margin * 2);
 
 	private createSvg(): void {
 		this.svg = d3.select("figure#bar")
