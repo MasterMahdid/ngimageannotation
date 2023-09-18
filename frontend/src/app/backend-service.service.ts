@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { Observable } from 'rxjs';
 export interface Iannotation {
+  id?:string
   type?: string
   dnn_model?: string
   confidence?: number

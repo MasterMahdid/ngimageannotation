@@ -37,7 +37,9 @@ app.get('/api/annotations', (req, res) => {
     let anns = [];
     fs.readdirSync('data').forEach(file => {
         let str = fs.readFileSync('data/' + file, 'utf8');
-        anns.push(JSON.parse(str));
+        let obj = JSON.parse(str);
+        obj['id'] = file;
+        anns.push(obj);
     });
     res.json(anns);
 });
