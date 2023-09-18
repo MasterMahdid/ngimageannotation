@@ -39,7 +39,7 @@ app.get('/api/annotations', (req, res) => {
         let str = fs.readFileSync('data/' + file, 'utf8');
         anns.push(JSON.parse(str));
     });
-    res.json({ message: "ok", annotations: anns });
+    res.json(anns);
 });
 app.post('/api/annotations', (req, res) => {
     let str = JSON.stringify(req.body)
