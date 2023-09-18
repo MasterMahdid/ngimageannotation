@@ -109,10 +109,12 @@ export class ImageViewerComponent {
 	annotations?: Iannotation[]
 	constructor(private service: BackendServiceService) { }
 	private createSvg(): void {
-		this.svg = d3.select('figure#bar')
+		this.svg = d3.select('figure#img')
 			.append('svg')
-			.attr('width', this.width + (this.margin * 2))
-			.attr('height', this.height + (this.margin * 2))
+			.attr('class','w-100')
+			.style('height','90vh')
+			//.attr('width', this.width + (this.margin * 2))
+			//.attr('height', this.height + (this.margin * 2))
 			.append('g')
 			.attr('transform', 'translate(' + this.margin + ',' + this.margin + ')')
 			.append('svg:image')

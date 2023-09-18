@@ -17,8 +17,12 @@
 
 <ul class="list-group">
   <li
-    class="list-group-item"
+    class="list-group-item"  data-bs-toggle="tooltip" data-bs-placement="top" 
     *ngFor="let da of data; let i = index">
-    {{ da.object }}
+    {{ da.object }} ({{da.object_version}})
+    <div class="float-end">
+      <!-- <button class="btn"><i class="bi bi-info-lg"></i></button> -->
+      <button class="btn btn-sm" title="Delete Annotation"><i class="bi bi-x-square-fill text-danger"></i></button>
+    </div>
   </li>
 </ul>
