@@ -18,7 +18,7 @@ app.get('/api/annotations/reset', (req, res) => {
         let p = 'data/' + file;
         fs.unlinkSync(p);
     });
-    const def = {
+    let def = {
         "type": "detection",
         "dnn_model": "M001A",
         "confidence": 99.9,
@@ -30,6 +30,30 @@ app.get('/api/annotations/reset', (req, res) => {
         "height": 32
     }
     fs.writeFileSync('data/default', JSON.stringify(def));
+    def = {
+        "type": "manual",
+        "dnn_model": "0",
+        "confidence": 0,
+        "object": "another object",
+        "object_version": "ver1",
+        "x": 100,
+        "y": 300,
+        "width":40,
+        "height": 80
+    }
+    fs.writeFileSync('data/default2', JSON.stringify(def));
+    def = {
+        "type": "manual",
+        "dnn_model": "",
+        "confidence": 0,
+        "object": "some object",
+        "object_version": "ver1",
+        "x": 200,
+        "y": 200,
+        "width": 75,
+        "height": 100
+    }
+    fs.writeFileSync('data/default3', JSON.stringify(def));
     res.json({ message: "ok" });
 });
 

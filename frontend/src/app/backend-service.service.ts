@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from "@angular/common/http";
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { BehaviorSubject, Observable, async, asyncScheduler } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
 export interface Iannotation {
-  id?:string
+  id: string
   type?: string
   dnn_model?: string
   confidence?: number
@@ -18,11 +19,46 @@ export interface Iannotation {
 })
 export class BackendServiceService {
 
-  constructor(private http: HttpClient) { }
+  private annotationsSubject: BehaviorSubject<Iannotation[]> = new BehaviorSubject<Iannotation[]>([]);
+  annotatations$: Observable<Iannotation[]> = this.annotationsSubject.asObservable();
 
-  getAnnotations():Observable<Iannotation[]> {
-    const url = "/api/annotations"
-    return this.http.get<Iannotation[]>(url);
+  constructor(private http: HttpClient) {
+    this.updateAnnotations();
   }
-
+  private updateAnnotations(): void {
+    const ob = this.http.get<Iannotation[]>('/api/annotations');
+    ob.subscribe(res => {
+      this.annotationsSubject.next(<Iannotation[]>res);
+    });
+  }
+  deleteAnnotation(id: string): void {
+    const ob = this.http.delete<any>('/api/annotations/' + id);
+    ob.subscribe(res => {
+      this.updateAnnotations();
+    });
+  }
+  editAnnotaion(id: string, fields: object): void {
+    var headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    });
+    const ob = this.http.put<any>('/api/annotations/'+id,JSON.stringify(fields), {
+      headers: headers
+    })
+    ob.subscribe(res => {
+      this.updateAnnotations();
+    });
+  }
+  newAnnotation(fields: object): void {
+    var headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    });
+    const ob = this.http.post<any>('/api/annotations/',JSON.stringify(fields), {
+      headers: headers
+    })
+    ob.subscribe(res => {
+      this.updateAnnotations();
+    });
+  }
 }

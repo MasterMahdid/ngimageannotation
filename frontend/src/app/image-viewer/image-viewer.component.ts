@@ -7,10 +7,16 @@ import * as d3 from 'd3';
 class D3SvgRectangle {
 	nodelist: any;
 	rect: any;
+	timeoutId: any;
 
-	constructor(private data: Iannotation) {
+	constructor(private data: Iannotation, index: number, private service: BackendServiceService) {
 		const _that = this;
 		const drag = d3.drag().on('drag', (e) => _that.handleDrag(e));
+		this.text = d3.select('svg g').append("text").text((index + 1).toString())
+			.attr('x', data.x + data.width / 2)
+			.attr('y', data.y + data.height / 2)
+			.style("text-anchor", "middle")
+			.style("dominant-baseline", "central");
 		this.rect = d3.select('svg g').append('rect')
 			.attr('x', data.x)
 			.attr('y', data.y)
@@ -21,10 +27,11 @@ class D3SvgRectangle {
 			.attr('fill', '#00000011');
 		this.rect.call(drag);
 
-		this.p1 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x).attr('cy', data.y).attr('fill','#29b6f2');
-		this.p2 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x + data.width).attr('cy', data.y).attr('fill','#29b6f2');
-		this.p3 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x + data.width).attr('cy', data.y + data.height).attr('fill','#29b6f2');
-		this.p4 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x).attr('cy', data.y + data.height).attr('fill','#29b6f2');
+		this.p1 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x).attr('cy', data.y).attr('fill', '#29b6f2');
+		this.p2 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x + data.width).attr('cy', data.y).attr('fill', '#29b6f2');
+		this.p3 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x + data.width).attr('cy', data.y + data.height).attr('fill', '#29b6f2');
+		this.p4 = d3.select('svg g').append('circle').attr('r', 5).attr('cx', data.x).attr('cy', data.y + data.height).attr('fill', '#29b6f2');
+		
 
 		const p1drag = d3.drag().on('drag', (e) => _that.handleP1Drag(e));
 		const p2drag = d3.drag().on('drag', (e) => _that.handleP2Drag(e));
@@ -35,15 +42,24 @@ class D3SvgRectangle {
 		this.p3.call(p3drag);
 		this.p4.call(p4drag);
 
-		const all_drags = [drag,p1drag,p2drag,p3drag,p4drag]
-		for(let d of all_drags)
-		{
-			d.on('end',()=>_that.onDragEnd());
+		const all_drags = [drag, p1drag, p2drag, p3drag, p4drag]
+		for (let d of all_drags) {
+			d.on('end', () => _that.onDragEnd());
 		}
 	}
-	onDragEnd():void
-	{
-		//console.log("drag_end")
+	onDragEnd(): void {
+		this.commitEdits();
+		// clearTimeout(this.timeoutId);
+		// const _that = this;
+		// this.timeoutId = setTimeout(() => {
+		// 	console.log("commit edits");
+		// 	_that.commitEdits();
+		// }, 1000);
+
+
+	}
+	commitEdits(): void {
+		this.service.editAnnotaion(this.data.id, this.data);
 	}
 	updateRect() {
 		this.rect.attr('x', this.data.x);
@@ -62,6 +78,9 @@ class D3SvgRectangle {
 
 		this.p4.attr('cx', this.data.x);
 		this.p4.attr('cy', this.data.y + this.data.height);
+
+		this.text.attr('x', this.data.x + this.data.width / 2)
+		this.text.attr('y', this.data.y + this.data.height / 2)
 	}
 	handleDrag(e: any) {
 		this.data.x += e.dx;
@@ -101,18 +120,15 @@ class D3SvgRectangle {
 	styleUrls: ['./image-viewer.component.css']
 })
 export class ImageViewerComponent {
-	private data: Array<any> = [];
-	private svg: any;
-	private margin = 0;
-	private width = 1550 - (this.margin * 2);
-	private height = 800 - (this.margin * 2);
-	annotations?: Iannotation[]
-	constructor(private service: BackendServiceService) { }
+	annotations$: Observable<Iannotation[]>;
+	constructor(private service: BackendServiceService) {
+		this.annotations$ = service.annotatations$;
+	}
 	private createSvg(): void {
 		this.svg = d3.select('figure#img')
 			.append('svg')
-			.attr('class','w-100')
-			.style('height','90vh')
+			.attr('class', 'w-100')
+			.style('height', '90vh')
 			//.attr('width', this.width + (this.margin * 2))
 			//.attr('height', this.height + (this.margin * 2))
 			.append('g')
@@ -124,9 +140,20 @@ export class ImageViewerComponent {
 			.attr('height', 1080)
 			.attr('xlink:href', 'https://placehold.co/1920x1080/png');
 
-		for (let an of this.annotations) {
 
-			new D3SvgRectangle(an);
+	}
+	private clearRects() {
+		d3.selectAll("svg g rect").remove();
+		d3.selectAll("svg g circle").remove();
+		d3.selectAll("svg g text").remove();
+	}
+	private addRects(d: Iannotation[]) {
+		this.clearRects();
+		let i = 0;
+		for (let an of d) {
+
+			//todo store these and release when cleaning
+			new D3SvgRectangle(an, i++, this.service);
 		}
 	}
 	private handleZoom(e: any): void {
@@ -138,12 +165,11 @@ export class ImageViewerComponent {
 		d3.select('svg').call(zoom);
 	}
 	ngOnInit(): void {
-		this.service.getAnnotations().subscribe({
-			next: (data) => {
-				this.annotations = data;
-				this.createSvg();
-				this.initZoom();
-			}
+		this.createSvg();
+		this.initZoom();
+		this.annotations$.subscribe((d: Iannotation[]) => {
+			this.addRects(d);
 		});
+
 	}
 }
