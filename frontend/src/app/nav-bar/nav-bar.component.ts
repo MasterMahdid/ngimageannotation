@@ -8,14 +8,16 @@ import { BackendServiceService, Iannotation } from '../backend-service.service';
 export class NavBarComponent {
   @Input()
   title?: string;
+  new_annot_object = "";
+  new_annot_version = "";
   constructor(private service: BackendServiceService) { }
 
   newAnnotation(): void {
     const modal: Iannotation = {
       dnn_model: '',
       confidence: 0,
-      object: 'awda',
-      object_version: 've',
+      object: this.new_annot_object,
+      object_version: this.new_annot_version,
       x: 0,
       y: 0,
       width: 100,
@@ -23,5 +25,7 @@ export class NavBarComponent {
       id: ''
     };
     this.service.newAnnotation(modal);
+    this.new_annot_object = "";
+    this.new_annot_version = "";
   }
 }
